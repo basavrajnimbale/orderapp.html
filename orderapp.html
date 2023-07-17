@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Order</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <form id="addToBill">
+            <label for="choosePrice">Choose Price :</label>
+            <input type="number" id="choosePrice" class="form-control-sm" /><br>
+            <label for="chooseDish">Choose Dish :</label>
+            <input type="text" id="chooseDish" class="form-control-sm m-2" /><br>
+            <label for="table">Choose a Table :</label>
+            <select class="form-select-sm" id="table">
+                <option>Table 1</option>
+                <option>Table 2</option>
+                <option>Table 3</option>
+            </select>
+            <input type="submit" class="btn btn-success" value="Add to bill">
+        </form>
+        <h1>Orders</h1>
+        <ul id="Table1" class="list-group">
+            <h3>Table 1</h3>
+        </ul>
+        <ul id="Table2" class="list-group">
+            <h3>Table 2</h3>
+        </ul>
+        <ul id="Table3" class="list-group">
+            <h3>Table 3</h3>
+        </ul>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.23.0/axios.min.js"></script>
+    <script>
+        const form = document.getElementById('addToBill');
+        const table1 = document.getElementById('Table1');
+        const table2 = document.getElementById('Table2');
+        const table3 = document.getElementById('Table3');
+
+        form.addEventListener('submit', addToBill);
+
+        async function addToBill(event) {
+            event.preventDefault();
+            const choosePrice = document.getElementById('choosePrice').value;
+            const chooseDish = document.getElementById('chooseDish').value;
+            const table = document.getElementById('table').value;
+            const obj = {
+                choosePrice,
+                chooseDish,
+                table
+            };
+
+            try {
+                const postOrder = await axios.post("https://crudcrud.com/api/1c89dede09a84a378487cdbed669dd16/hotelOrder", obj);
+                showOrderOnScreen(postOrder.data);
+                console.log(postOrder);
+            } catch (err) {
+                console.log(err);
+            }
+
+            form.reset();
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const getOrder = await axios.get("https://crudcrud.com/api/1c89dede09a84a378487cdbed669dd16/hotelOrder");
+                for (let i = 0; i < getOrder.data.length; i++) {
+                    showOrderOnScreen(getOrder.data[i]);
+                }
+                console.log(getOrder);
+            } catch (error) {
+                console.log(error);
+            }
+        });
+
+        async function showOrderOnScreen(obj) {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${obj.choosePrice} - ${obj.chooseDish} - ${obj.table}`;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-danger btn-sm';
+            deleteBtn.style = "--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;";
+            deleteBtn.textContent = 'Delete Order';
+
+            listItem.appendChild(deleteBtn);
+
+            if (obj.table === "Table 1") {
+                table1.appendChild(listItem);
+            } else if (obj.table === "Table 2") {
+                table2.appendChild(listItem);
+            } else if (obj.table === "Table 3") {
+                table3.appendChild(listItem);
+            }
+
+            deleteBtn.onclick = async () => {
+                try {
+                    await axios.delete(`https://crudcrud.com/api/1c89dede09a84a378487cdbed669dd16/hotelOrder/${obj._id}`);
+                    listItem.remove();
+                    console.log(obj);
+                } catch (err) {
+                    console.log(err);
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>
